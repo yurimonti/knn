@@ -68,13 +68,13 @@ void set_values_to_neigh(double *neigh_distances, int *neigh_idxes,int num_neigh
     neigh_idxes[get_matrix_position(point_idx, from_pos, num_neigh)] = neigh_idx;
 }
 
-void set_values_for_coordinate(int i, int j, int K,double *neigh_distances_matrix, int *neighs_matrix, double dist){
+void set_values_for_coordinate(int row, int column, int K,double *neigh_distances_matrix, int *neighs_matrix, double dist){
     
     for (int h = 0; h < K; h++){
-        double neigh_dist = neigh_distances_matrix[i*K + h];
+        double neigh_dist = neigh_distances_matrix[row*K + h];
         if(dist < neigh_dist){
-            right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,i);
-            set_values_to_neigh(neigh_distances_matrix,neighs_matrix,K,dist,i,h,j);
+            right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,row);
+            set_values_to_neigh(neigh_distances_matrix,neighs_matrix,K,dist,row,h,column);
             break;
         }
     }
@@ -183,13 +183,6 @@ int main(int argc, char *argv[]){
     // for (int i = 0; i < N*K; i++){
     //     if(i%K == 0) printf("\nX%d: \t",i/K);
     //     printf("%d || ", neighs_matrix[i]);
-    // }
-
-    
-
-    // for (int i = 0; i < N*points_per_process; i++){
-    //     if(i%N == 0) printf("\n");
-    //     printf("%lf || ", distances[i]);
     // }
 
 
