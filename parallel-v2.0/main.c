@@ -20,7 +20,6 @@ double euclideanDistance(t_point* point1, t_point* point2) {
 }
 
 void generate_points(t_point* points, int num_points, int cube_length) {
-    //srand(time(0));
     for (int i = 0; i < num_points; i++) {
         points[i].x = (double)rand() / RAND_MAX * cube_length;
         points[i].y = (double)rand() / RAND_MAX * cube_length;
@@ -62,6 +61,21 @@ void set_values_to_neigh(double *neigh_distances, int *neigh_idxes,int num_neigh
     neigh_distances[get_matrix_position(point_idx, from_pos, num_neigh)] = distance;
     neigh_idxes[get_matrix_position(point_idx, from_pos, num_neigh)] = neigh_idx;
 }
+
+void set_values_for_coordinate(int i, int j, int K,double *neigh_distances_matrix, int *neighs_matrix, double dist){
+    
+    for (int h = 0; h < K; h++){
+        double neigh_dist = neigh_distances_matrix[i*K + h];
+        if(dist < neigh_dist){
+            right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,i);
+            set_values_to_neigh(neigh_distances_matrix,neighs_matrix,K,dist,i,h,j);
+            break;
+        }
+    }
+}
+
+
+
 
 int main(int argc, char *argv[]){
 
@@ -119,8 +133,6 @@ int main(int argc, char *argv[]){
         distances_buffer = (double *)malloc(sizeof(double)*N*N);
         fill_default_values(neigh_distances_matrix,neighs_matrix,K,N,cube_side_value);
     }
-    //neighs_matrix = (int *)malloc(sizeof(int)*K*points_per_process);
-    //neigh_distances_matrix = (double *)malloc(sizeof(double)*K*points_per_process);
     distances = (double *)malloc(sizeof(double)*N*points_per_process);
 
     MPI_Barrier(MPI_COMM_WORLD);
@@ -155,25 +167,8 @@ int main(int argc, char *argv[]){
                 //devo fare per i due X punti che sono legati da questo valore
                 //esempio questo punto è (Xi,Xj) = 20 -> faccio per Xi e Xj
 
-                //per prima coordinata
-                for (int h = 0; h < K; h++){
-                    double neigh_dist = neigh_distances_matrix[i*K + h];
-                    if(dist < neigh_dist){
-                        right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,i);
-                        set_values_to_neigh(neigh_distances_matrix,neighs_matrix,K,dist,i,h,j);
-                        break;
-                    }
-                }
-                
-                //per seconda coordinata
-                for (int h = 0; h < K; h++){
-                    double neigh_dist = neigh_distances_matrix[j*K + h];
-                    if(dist < neigh_dist){
-                        right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,j);
-                        set_values_to_neigh(neigh_distances_matrix,neighs_matrix,K,dist,j,h,i);
-                        break;
-                    }
-                }
+                set_values_for_coordinate(i,j,K,neigh_distances_matrix,neighs_matrix,dist);
+                set_values_for_coordinate(j,i,K,neigh_distances_matrix,neighs_matrix,dist);
 
             }
         }
@@ -194,21 +189,21 @@ int main(int argc, char *argv[]){
         // printf("--------------DISTANCES--------------");
         // for (int i = 0; i < N*N; i++){
         //     if(i%N == 0) printf("\nX%d: \t",i/N);
-        //     printf("%lf || ", distances_buffer[i]);
+        //     printf("%lf \t ", distances_buffer[i]);
         // }
 
         // printf("\n");
         // printf("--------------DISTANCES NEIGH--------------");
         // for (int i = 0; i < N*K; i++){
         //     if(i%K == 0) printf("\nX%d: \t",i/K);
-        //     printf("%lf || ", neigh_distances_matrix[i]);
+        //     printf("%lf \t ", neigh_distances_matrix[i]);
         // }
 
         // printf("\n");
         // printf("--------------NEIGH--------------");
         // for (int i = 0; i < N*K; i++){
         //     if(i%K == 0) printf("\nX%d: \t",i/K);
-        //     printf("%d || ", neighs_matrix[i]);
+        //     printf("%d \t ", neighs_matrix[i]);
         // }
 
     }
