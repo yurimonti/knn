@@ -26,7 +26,7 @@ void generate_points(t_point* points, int num_points, int cube_length) {
     }
 }
 
-double dwalltime() {
+double actual_time() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     double sec = tv.tv_sec + tv.tv_usec / 1000000.0;
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
 
     // ----------------------COMPUTATION----------------------
 
-    start = dwalltime();  
+    start = actual_time();  
 
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
@@ -149,7 +149,6 @@ int main(int argc, char *argv[]){
 
             //devo fare per i due X punti che sono legati da questo valore
             //esempio questo punto è (Xi,Xj) = 20 -> faccio per Xi e Xj
-
             set_values_for_coordinate(i,j,K,neigh_distances_matrix,neighs_matrix,dist);
             set_values_for_coordinate(j,i,K,neigh_distances_matrix,neighs_matrix,dist);
 
@@ -157,33 +156,13 @@ int main(int argc, char *argv[]){
     }
 
 
-    finish = dwalltime() - start;
+    finish = actual_time() - start;
 
 
     // ----------------------PRINT----------------------
 
     
     printf("\nTime elapsed: %lf seconds\n",finish);
-
-    // printf("--------------DISTANCES--------------");
-    // for (int i = 0; i < N*N; i++){
-    //     if(i%N == 0) printf("\nX%d: \t",i/N);
-    //     printf("%lf || ", distances[i]);
-    // }
-
-    // printf("\n");
-    // printf("--------------DISTANCES NEIGH--------------");
-    // for (int i = 0; i < N*K; i++){
-    //     if(i%K == 0) printf("\nX%d: \t",i/K);
-    //     printf("%lf || ", neigh_distances_matrix[i]);
-    // }
-
-    // printf("\n");
-    // printf("--------------NEIGH--------------");
-    // for (int i = 0; i < N*K; i++){
-    //     if(i%K == 0) printf("\nX%d: \t",i/K);
-    //     printf("%d || ", neighs_matrix[i]);
-    // }
 
 
     // ----------------------FREE MEMORY----------------------

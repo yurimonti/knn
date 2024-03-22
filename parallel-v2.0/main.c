@@ -122,10 +122,9 @@ int main(int argc, char *argv[]){
     for (int i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
         for (int j =  0; j < N; j++){
             if(i == j) continue;
-            //else {
-                // write_value_matrix2(distance_matrix,i,j,N,euclideanDistance(&points[i],&points[j]));
+
             double dist = euclideanDistance(&points[i],&points[j]);
-            //printf("euclidean distance between i:%d j:%d is: %f",i,j,dist);
+
             for (int h = 0; h < K; h++){
                 //anche per i neighbours
                 double neigh_dist = neigh_distances_matrix[((i % points_per_process) * K) + h];
@@ -142,38 +141,6 @@ int main(int argc, char *argv[]){
     MPI_Gather(neighs_matrix,K*points_per_process,MPI_INT,r_buffer_neighs,K*points_per_process,MPI_INT,0,MPI_COMM_WORLD);
 
 
-    // if(my_rank ==0){
-    //     printf("\n================NUMBERS===================\n");
-    //     for (int j = 0; j < N; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("[%lf,%lf,%lf]      ",points[j].x,points[j].y,points[j].z);
-    //     }   
-    //     printf("\n");
-    // }
-
-    // printf("\n================MIN RANK = %d===================\n",my_rank);
-    // for (int i = 0; i < points_per_process; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%lf     ", neigh_distances_matrix[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // printf("\n================NEIGH RANK = %d===================\n",my_rank);
-    // for (int i = 0; i < points_per_process; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%d     ", neighs_matrix[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
-
     finish = MPI_Wtime()-start;
     double max_time;
 
@@ -181,26 +148,6 @@ int main(int argc, char *argv[]){
 
     if(my_rank ==0){
         printf("Time elapsed: %lf seconds",max_time);
-        // printf("\n================MIN TOTAL===================\n");
-        // for (int i = 0; i < N; i++)
-        // {
-        //     for (int j = 0; j < K; j++)
-        //     {
-        //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-        //         printf("%lf     ", r_buffer_distances[i*K+j]);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n================NEIGH TOTAL===================\n");
-        // for (int i = 0; i < N; i++)
-        // {
-        //     for (int j = 0; j < K; j++)
-        //     {
-        //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-        //         printf("%d     ", r_buffer_neighs[i*K+j]);
-        //     }
-        //     printf("\n");
-        // }
     }
     //Freeing memory
     if(my_rank ==0){

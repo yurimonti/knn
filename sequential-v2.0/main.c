@@ -86,7 +86,7 @@ void write_value_matrix2(double *matrix,int row,int col,int n_cols, double to_se
     matrix[offset] = to_set;
 }
 
-double dwalltime() {
+double actual_time() {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     double sec = tv.tv_sec + tv.tv_usec / 1000000.0;
@@ -118,7 +118,7 @@ int main(int argc, char **argv){
     }
     //SETTING UP
     t_point *points = (t_point *) malloc(sizeof(t_point) * N);
-    //double *distance_matrix = (double *)malloc(sizeof(double)*((N*(N-1))/2));
+
     int *neighs_matrix = (int *)malloc(sizeof(int)*K*N);
     double *neigh_distances_matrix = (double *)malloc(sizeof(double)*K*N);
     srand(time(0));
@@ -126,18 +126,14 @@ int main(int argc, char **argv){
     fill_default_values(neigh_distances_matrix,neighs_matrix,K,N);
 
     //TIME
-    double tick = dwalltime();
+    double tick = actual_time();
 
     //COMPUTATION
     for (int i = 0; i < N; i++){
         for (int j = 0; j < N; j++){
             if(i == j) continue;
-            //else {
-                //write_value_matrix2(distance_matrix,i,j,N,euclideanDistance(&points[i],&points[j]));
                 double dist = euclideanDistance(&points[i],&points[j]);
-                //printf("euclidean distance between i:%d j:%d is: %f",i,j,dist);
                 for (int h = 0; h < K; h++){
-                    //anche per i neighbours
                     double neigh_dist = neigh_distances_matrix[get_matrix_position(i,h,K)];
                     if(dist < neigh_dist){
                         right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,i);
@@ -145,44 +141,12 @@ int main(int argc, char **argv){
                         break;
                     }
                 }
-                
-            //}
         }
     }
-    printf("Total time=%lf\n", dwalltime() - tick);
-    // printf("\n=============COMPLETE MATRIX======================\n");
-    // for (int i = 0; i < N; i++){
-    //     for (int j = 0; j < N; j++){
-    //         double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%f     ", to_print);
-    //     }
-    //     printf("\n");
-    // }
-    // printf("\n================MIN===================\n");
-    // for (int i = 0; i < N; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%f     ", neigh_distances_matrix[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // printf("\n================NEIGH===================\n");
-    // for (int i = 0; i < N; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%d     ", neighs_matrix[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
+    printf("Total time=%lf\n", actual_time() - tick);
 
     free(neigh_distances_matrix);
     free(neighs_matrix);
-    //free(distance_matrix);
     free(points);
 return EXIT_SUCCESS;
 }

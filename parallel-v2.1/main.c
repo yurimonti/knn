@@ -11,36 +11,6 @@ typedef struct point_st {
     double y;
     double z;
 }t_point;
- 
-double euclideanDistance(t_point* point1, t_point* point2) {
-    double x = point1->x - point2->x;
-    double y = point1->y - point2->y;
-    double z = point1->z - point2->z;
-    return sqrt(x * x + y * y + z * z);
-}
-
-void generate_points(t_point* points, int num_points, int cube_length) {
-    //srand(time(0));
-    for (int i = 0; i < num_points; i++) {
-        points[i].x = (double)rand() / RAND_MAX * cube_length;
-        points[i].y = (double)rand() / RAND_MAX * cube_length;
-        points[i].z = (double)rand() / RAND_MAX * cube_length;
-    }
-}
-
-int get_matrix_position(int col, int row, int n_row){
-    int offset = col * n_row;
-    return offset + row;
-}
-
-void right_shift_from_position(int *neigh, double *dist,int neigh_number,int from_pos,int point_idx){
-    for (int r = neigh_number - 1; r > from_pos; r--){
-        int current_pos = get_matrix_position(point_idx,r,neigh_number);
-        int prev_pos = get_matrix_position(point_idx,r-1,neigh_number);
-        dist[current_pos] = dist[prev_pos];
-        neigh[current_pos] = neigh[prev_pos];
-    }
-}
 
 void print_error_argc(int argc){
     fprintf(stderr, "\n\nWrong number of parameters! Expected 3, but are %d!\n", argc);
@@ -50,6 +20,21 @@ void print_error_argc(int argc){
 void print_error_neighbours(int points_number, int neighbours_number){
     fprintf(stderr, "\n\nNeighbours to find are more than the total number of points! Expected < %d, but are %d!\n",points_number,neighbours_number);
 }
+ 
+double euclideanDistance(t_point* point1, t_point* point2) {
+    double x = point1->x - point2->x;
+    double y = point1->y - point2->y;
+    double z = point1->z - point2->z;
+    return sqrt(x * x + y * y + z * z);
+}
+
+void generate_points(t_point* points, int num_points, int cube_length) {
+    for (int i = 0; i < num_points; i++) {
+        points[i].x = (double)rand() / RAND_MAX * cube_length;
+        points[i].y = (double)rand() / RAND_MAX * cube_length;
+        points[i].z = (double)rand() / RAND_MAX * cube_length;
+    }
+}
 
 void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,int num_points,int cube_dim){
     for (int i = 0; i < num_neigh*num_points; i++){
@@ -58,44 +43,31 @@ void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,
     }
 }
 
-void set_values_to_neigh(double *neigh_distances, int *neigh_idxes,int num_neigh,double distance,int point_idx,int from_pos,int neigh_idx){
-    neigh_distances[get_matrix_position(point_idx, from_pos, num_neigh)] = distance;
-    neigh_idxes[get_matrix_position(point_idx, from_pos, num_neigh)] = neigh_idx;
-}
-
-int find_position(double *array, int left, int right, double to_insert)
-{
-    while (left <= right)
-    {
+int find_position(double *array, int left, int right, double to_insert){
+    while (left <= right){
         int mid = (left + right) / 2;
 
-        if (array[mid] == to_insert)
-        {
+        if (array[mid] == to_insert){
             return mid;
         }
-        else if (array[mid] < to_insert)
-        {
+        else if (array[mid] < to_insert){
             left = mid + 1;
         }
-        else
-        {
+        else{
             right = mid - 1;
         }
     }
-
     return left;
 }
 
-void insert_value(double *array, int *array2, int array_dim, double distance_to_insert,int neigh_to_insert,int idx_point){
-    int position = find_position(array, idx_point*array_dim , (idx_point+1)*array_dim - 1, distance_to_insert);
-    for (int i = (idx_point+1)*array_dim - 1; i > position; i--){
-        array[i] = array[i - 1];
-        array2[i] = array2[i - 1];
+void insert_value(double *neigh_dists, int *neigh_idxs, int neighs_number, double distance_to_insert,int neigh_to_insert,int idx_point){
+    int position = find_position(neigh_dists, idx_point*neighs_number , (idx_point+1)*neighs_number - 1, distance_to_insert);
+    for (int i = (idx_point+1)*neighs_number - 1; i > position; i--){
+        neigh_dists[i] = neigh_dists[i - 1];
+        neigh_idxs[i] = neigh_idxs[i - 1];
     }
-    array[position] = distance_to_insert;
-    array2[position] = neigh_to_insert;
-    //printf("position changed %lf\n",array[position]);
-    //(array_dim)++;
+    neigh_dists[position] = distance_to_insert;
+    neigh_idxs[position] = neigh_to_insert;
 }
 
 int main(int argc, char *argv[]){
@@ -157,103 +129,44 @@ int main(int argc, char *argv[]){
     for (int i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
         for (int j =  0; j < N; j++){
             if(i == j) continue;
-            //else {
-            //write_value_matrix2(distance_matrix,i,j,N,euclideanDistance(&points[i],&points[j]));
+            
             double dist = euclideanDistance(&points[i],&points[j]);
-            //printf("euclidean distance between i:%d j:%d is: %f",i,j,dist);
+            
             insert_value(neigh_distances_matrix,neighs_matrix,K,dist,j,(i % points_per_process));
-            // for (int h = 0; h < K; h++){
-            //     //anche per i neighbours
-            //     double neigh_dist = neigh_distances_matrix[((i % points_per_process) * K) + h];
-            //     if(dist < neigh_dist){
-            //         right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,(i % points_per_process));
-            //         set_values_to_neigh(neigh_distances_matrix,neighs_matrix,K,dist,(i % points_per_process),h,j);
-            //         break;
-            //     }
-            // }
+
         }
     }
     
     MPI_Gather(neigh_distances_matrix,K*points_per_process,MPI_DOUBLE,r_buffer_distances,K*points_per_process,MPI_DOUBLE,0,MPI_COMM_WORLD);
     MPI_Gather(neighs_matrix,K*points_per_process,MPI_INT,r_buffer_neighs,K*points_per_process,MPI_INT,0,MPI_COMM_WORLD);
 
-
-    // if(my_rank ==0){
-    //     printf("\n================NUMBERS===================\n");
-    //     for (int j = 0; j < N; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("[%lf,%lf,%lf]      ",points[j].x,points[j].y,points[j].z);
-    //     }   
-    //     printf("\n");
-    // }
-
-    // printf("\n================MIN RANK = %d===================\n",my_rank);
-    // for (int i = 0; i < points_per_process; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%lf     ", neigh_distances_matrix[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    // printf("\n================NEIGH RANK = %d===================\n",my_rank);
-    // for (int i = 0; i < points_per_process; i++)
-    // {
-    //     for (int j = 0; j < K; j++)
-    //     {
-    //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-    //         printf("%d     ", neighs_matrix[i * K + j]);
-    //     }
-    //     printf("\n");
-    // }
-
     finish = MPI_Wtime()-start;
     double max_time;
 
     MPI_Reduce(&finish,&max_time,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
 
+    //PRINTING EXECUTION TIME BY COORDINATOR
     if(my_rank ==0){
         printf("Time elapsed: %lf seconds",max_time);
-
-        FILE *fpt1, *fpt2, *fpt3;
-        fpt1 = fopen("points.csv", "w+");
-        fpt2 = fopen("neighbours.csv", "w+");
-        fpt3 = fopen("min-distances.csv", "w+");
+        //WRITING POINTS , DISTANCES AND NEIGHBOURS INDEX IN DIFFERENT FILES BY COORDINATOR
+        FILE *fp_points, *fp_neighs, *fp_distances;
+        fp_points = fopen("points.csv", "w");
+        fp_neighs = fopen("neighbours.csv", "w");
+        fp_distances = fopen("min-distances.csv", "w");
         for (int i=0; i<N; i++) {
-            fprintf(fpt1, "%lf,%lf,%lf\n", (double) points[i].x, (double)points[i].y, (double)points[i].z);
+            fprintf(fp_points, "[%lf,%lf,%lf]\n", (double) points[i].x, (double)points[i].y, (double)points[i].z);
             for(int j=0; j<K; j++) {
-                fprintf(fpt2,"%d,", r_buffer_neighs[i*K + j]);
-                fprintf(fpt3,"%lf,", r_buffer_distances[i*K + j]);
+                int array_idx = i*K + j;
+                int neigh_idx = r_buffer_neighs[array_idx];
+                fprintf(fp_neighs,"[%lf,%lf,%lf]\t", points[neigh_idx].x,points[neigh_idx].y,points[neigh_idx].z);
+                fprintf(fp_distances,"%lf\t", r_buffer_distances[array_idx]);
             }
-            fprintf(fpt2,"\n");
-            fprintf(fpt3,"\n");
+            fprintf(fp_neighs,"\n");
+            fprintf(fp_distances,"\n");
         }
-        fclose(fpt1);
-        fclose(fpt2);
-        fclose(fpt3);
-        // printf("\n================MIN TOTAL===================\n");
-        // for (int i = 0; i < N; i++)
-        // {
-        //     for (int j = 0; j < K; j++)
-        //     {
-        //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-        //         printf("%lf     ", r_buffer_distances[i*K+j]);
-        //     }
-        //     printf("\n");
-        // }
-        // printf("\n================NEIGH TOTAL===================\n");
-        // for (int i = 0; i < N; i++)
-        // {
-        //     for (int j = 0; j < K; j++)
-        //     {
-        //         // double to_print = i==j ? 0.0 : read_value_matrix2(distance_matrix,i,j,N);
-        //         printf("%d     ", r_buffer_neighs[i*K+j]);
-        //     }
-        //     printf("\n");
-        // }
+        fclose(fp_points);
+        fclose(fp_neighs);
+        fclose(fp_distances);
     }
     //Freeing memory
     if(my_rank ==0){
