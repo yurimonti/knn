@@ -147,7 +147,11 @@ int main(int argc, char *argv[]){
     MPI_Reduce(&finish,&max_time,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
 
     if(my_rank ==0){
-        printf("Time elapsed: %lf seconds",max_time);
+        printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
+
+        FILE *results_file = fopen("results.txt","a+");
+        fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
+        fclose(results_file);
     }
     //Freeing memory
     if(my_rank ==0){

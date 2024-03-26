@@ -184,8 +184,11 @@ int main(int argc, char *argv[]){
     // ----------------------PRINT----------------------
 
     if(my_rank ==0){
-        printf("\nTime elapsed: %lf seconds\n",max_time);
+        printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
 
+        FILE *results_file = fopen("results.txt","a+");
+        fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
+        fclose(results_file);
         // printf("--------------DISTANCES--------------");
         // for (int i = 0; i < N*N; i++){
         //     if(i%N == 0) printf("\nX%d: \t",i/N);

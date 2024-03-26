@@ -147,9 +147,9 @@ int main(int argc, char *argv[]){
 
     //PRINTING EXECUTION TIME BY COORDINATOR
     if(my_rank ==0){
-        printf("Time elapsed: %lf seconds",max_time);
+        printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
         //WRITING POINTS , DISTANCES AND NEIGHBOURS INDEX IN DIFFERENT FILES BY COORDINATOR
-        FILE *fp_points, *fp_neighs, *fp_distances;
+        /* FILE *fp_points, *fp_neighs, *fp_distances;
         fp_points = fopen("points.csv", "w");
         fp_neighs = fopen("neighbours.csv", "w");
         fp_distances = fopen("min-distances.csv", "w");
@@ -166,7 +166,11 @@ int main(int argc, char *argv[]){
         }
         fclose(fp_points);
         fclose(fp_neighs);
-        fclose(fp_distances);
+        fclose(fp_distances); */
+
+        FILE *results_file = fopen("results.txt","a+");
+        fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
+        fclose(results_file);
     }
     //Freeing memory
     if(my_rank ==0){
