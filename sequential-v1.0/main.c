@@ -144,7 +144,6 @@ int main(int argc, char *argv[]){
         }
     }
 
-    int i,j;
     for (i = 0; i < N; i++){
         for (j = 0; j < N; j++){
             if(i >= j) continue;
@@ -166,8 +165,10 @@ int main(int argc, char *argv[]){
     // ----------------------PRINT----------------------
 
     
-    printf("\nTime elapsed: %lf seconds\n",finish);
-
+    printf("N=%d , K=%d -> Time elapsed: %lf seconds\n",N,K,finish);
+    FILE *results_file = fopen("results.txt","a+");
+    fprintf(results_file, "(N=%d) (K=%d)\t	Max Time=%lf\n", N, K, finish);
+    fclose(results_file);
 
     // ----------------------FREE MEMORY----------------------
 

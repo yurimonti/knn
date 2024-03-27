@@ -138,7 +138,11 @@ int main(int argc, char **argv){
 
         }
     }
-    printf("Total time=%lf\n", actual_time() - tick);
+    double finish = actual_time() - tick;
+    printf("N=%d , K=%d -> Time elapsed: %lf seconds\n",N,K,finish);
+    FILE *results_file = fopen("results.txt","a+");
+    fprintf(results_file, "(N=%d) (K=%d)\t	Max Time=%lf\n", N, K, finish);
+    fclose(results_file);
 
     free(neigh_distances_matrix);
     free(neighs_matrix);
