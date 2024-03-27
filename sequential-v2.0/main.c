@@ -37,7 +37,8 @@ double euclideanDistance(t_point* point1, t_point* point2) {
 }
 
 void generate_points(t_point* points, int num_points, double cube_length) {
-    for (int i = 0; i < num_points; i++) {
+    int i;
+    for (i = 0; i < num_points; i++) {
         points[i].x = (double)rand() / RAND_MAX * cube_length;
         points[i].y = (double)rand() / RAND_MAX * cube_length;
         points[i].z = (double)rand() / RAND_MAX * cube_length;
@@ -50,7 +51,8 @@ int get_matrix_position(int row, int col, int n_col){
 }
 
 void right_shift_from_position(int *neigh, double *dist,int neigh_number,int from_pos,int point_idx){
-    for (int r = neigh_number - 1; r > from_pos; r--){
+    int r;
+    for (r = neigh_number - 1; r > from_pos; r--){
         int current_pos = get_matrix_position(point_idx,r,neigh_number);
         int prev_pos = get_matrix_position(point_idx,r-1,neigh_number);
         dist[current_pos] = dist[prev_pos];
@@ -70,7 +72,8 @@ void print_error_neighbours(int points_number, int neighbours_number){
 int get_offset(int row , int col, int matrix_dim){
     if(row < col){
         int c = 0;
-        for (int i = 0; i < row; i++) c -=i;
+        int i;
+        for (i = 0; i < row; i++) c -=i;
         int pos = c + row * (matrix_dim -1)+ col -1;
         return pos;
     } if (row > col) return get_offset(col,row,matrix_dim);
@@ -94,7 +97,8 @@ double actual_time() {
 }
 
 void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,int num_points){
-    for (int i = 0; i < num_neigh*num_points; i++){
+    int i;
+    for (i = 0; i < num_neigh*num_points; i++){
         neigh_distance[i] = 100*sqrt(3) +1;
         neigh_idxes[i] = -1;
     }
@@ -129,11 +133,12 @@ int main(int argc, char **argv){
     double tick = actual_time();
 
     //COMPUTATION
-    for (int i = 0; i < N; i++){
-        for (int j = 0; j < N; j++){
+    int i,j,h;
+    for (i = 0; i < N; i++){
+        for (j = 0; j < N; j++){
             if(i == j) continue;
                 double dist = euclideanDistance(&points[i],&points[j]);
-                for (int h = 0; h < K; h++){
+                for (h = 0; h < K; h++){
                     double neigh_dist = neigh_distances_matrix[get_matrix_position(i,h,K)];
                     if(dist < neigh_dist){
                         right_shift_from_position(neighs_matrix,neigh_distances_matrix,K,h,i);

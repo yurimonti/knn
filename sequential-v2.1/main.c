@@ -18,7 +18,8 @@ double euclideanDistance(t_point* point1, t_point* point2) {
 }
 
 void generate_points(t_point* points, int num_points, double cube_length) {
-    for (int i = 0; i < num_points; i++) {
+    int i;
+    for (i = 0; i < num_points; i++) {
         points[i].x = (double)rand() / RAND_MAX * cube_length;
         points[i].y = (double)rand() / RAND_MAX * cube_length;
         points[i].z = (double)rand() / RAND_MAX * cube_length;
@@ -49,7 +50,8 @@ int find_position(double *array, int left, int right, double to_insert){
 
 void insert_value(double *array, int *array2, int array_dim, double distance_to_insert,int neigh_to_insert,int idx_point){
     int position = find_position(array, idx_point*array_dim , (idx_point+1)*array_dim - 1, distance_to_insert);
-    for (int i = (idx_point+1)*array_dim - 1; i > position; i--){
+    int i;
+    for (i = (idx_point+1)*array_dim - 1; i > position; i--){
         array[i] = array[i - 1];
         array2[i] = array2[i - 1];
     }
@@ -69,7 +71,8 @@ void print_error_neighbours(int points_number, int neighbours_number){
 int get_offset(int row , int col, int matrix_dim){
     if(row < col){
         int c = 0;
-        for (int i = 0; i < row; i++) c -=i;
+        int i;
+        for (i = 0; i < row; i++) c -=i;
         int pos = c + row * (matrix_dim -1)+ col -1;
         return pos;
     } if (row > col) return get_offset(col,row,matrix_dim);
@@ -93,7 +96,8 @@ double actual_time() {
 }
 
 void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,int num_points){
-    for (int i = 0; i < num_neigh*num_points; i++){
+    int i;
+    for (i = 0; i < num_neigh*num_points; i++){
         neigh_distance[i] = 100*sqrt(3) +1;
         neigh_idxes[i] = -1;
     }
@@ -123,8 +127,9 @@ int main(int argc, char **argv){
     double tick = actual_time();
 
     //COMPUTATION
-    for (int i = 0; i < N; i++){
-        for (int j = 0; j < N; j++){
+    int i,j;
+    for (i = 0; i < N; i++){
+        for (j = 0; j < N; j++){
             if(i == j) continue;
 
                 double dist = euclideanDistance(&points[i],&points[j]);

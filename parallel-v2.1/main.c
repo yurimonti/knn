@@ -29,7 +29,8 @@ double euclideanDistance(t_point* point1, t_point* point2) {
 }
 
 void generate_points(t_point* points, int num_points, int cube_length) {
-    for (int i = 0; i < num_points; i++) {
+    int i;
+    for (i = 0; i < num_points; i++) {
         points[i].x = (double)rand() / RAND_MAX * cube_length;
         points[i].y = (double)rand() / RAND_MAX * cube_length;
         points[i].z = (double)rand() / RAND_MAX * cube_length;
@@ -37,7 +38,8 @@ void generate_points(t_point* points, int num_points, int cube_length) {
 }
 
 void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,int num_points,int cube_dim){
-    for (int i = 0; i < num_neigh*num_points; i++){
+    int i;
+    for (i = 0; i < num_neigh*num_points; i++){
         neigh_distance[i] = cube_dim*sqrt(3) +1;
         neigh_idxes[i] = -1;
     }
@@ -62,7 +64,8 @@ int find_position(double *array, int left, int right, double to_insert){
 
 void insert_value(double *neigh_dists, int *neigh_idxs, int neighs_number, double distance_to_insert,int neigh_to_insert,int idx_point){
     int position = find_position(neigh_dists, idx_point*neighs_number , (idx_point+1)*neighs_number - 1, distance_to_insert);
-    for (int i = (idx_point+1)*neighs_number - 1; i > position; i--){
+    int i;
+    for (i = (idx_point+1)*neighs_number - 1; i > position; i--){
         neigh_dists[i] = neigh_dists[i - 1];
         neigh_idxs[i] = neigh_idxs[i - 1];
     }
@@ -126,8 +129,9 @@ int main(int argc, char *argv[]){
     MPI_Bcast(points,N,point_type,0,MPI_COMM_WORLD);
 
     //COMPUTATION
-    for (int i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
-        for (int j =  0; j < N; j++){
+    int i,j;
+    for (i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
+        for (j = 0; j < N; j++){
             if(i == j) continue;
             
             double dist = euclideanDistance(&points[i],&points[j]);

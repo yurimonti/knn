@@ -20,8 +20,8 @@ double euclideanDistance(t_point* point1, t_point* point2) {
 }
 
 void generate_points(t_point* points, int num_points, int cube_length) {
-    //srand(time(0));
-    for (int i = 0; i < num_points; i++) {
+    int i;
+    for (i = 0; i < num_points; i++) {
         points[i].x = (double)rand() / RAND_MAX * cube_length;
         points[i].y = (double)rand() / RAND_MAX * cube_length;
         points[i].z = (double)rand() / RAND_MAX * cube_length;
@@ -34,7 +34,8 @@ int get_matrix_position(int col, int row, int n_row){
 }
 
 void right_shift_from_position(int *neigh, double *dist,int neigh_number,int from_pos,int point_idx){
-    for (int r = neigh_number - 1; r > from_pos; r--){
+    int r;
+    for (r = neigh_number - 1; r > from_pos; r--){
         int current_pos = get_matrix_position(point_idx,r,neigh_number);
         int prev_pos = get_matrix_position(point_idx,r-1,neigh_number);
         dist[current_pos] = dist[prev_pos];
@@ -52,7 +53,8 @@ void print_error_neighbours(int points_number, int neighbours_number){
 }
 
 void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,int num_points,int cube_dim){
-    for (int i = 0; i < num_neigh*num_points; i++){
+    int i;
+    for (i = 0; i < num_neigh*num_points; i++){
         neigh_distance[i] = cube_dim*sqrt(3) +1;
         neigh_idxes[i] = -1;
     }
@@ -119,13 +121,14 @@ int main(int argc, char *argv[]){
     MPI_Bcast(points,N,point_type,0,MPI_COMM_WORLD);
 
     //COMPUTATION
-    for (int i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
-        for (int j =  0; j < N; j++){
+    int i,j,h;
+    for (i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
+        for (j =  0; j < N; j++){
             if(i == j) continue;
 
             double dist = euclideanDistance(&points[i],&points[j]);
 
-            for (int h = 0; h < K; h++){
+            for (h = 0; h < K; h++){
                 //anche per i neighbours
                 double neigh_dist = neigh_distances_matrix[((i % points_per_process) * K) + h];
                 if(dist < neigh_dist){
