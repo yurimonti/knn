@@ -90,8 +90,8 @@ int main(int argc, char *argv[]){
 
     // ----------------------INIT----------------------
 
-    int N,K;
-    int cube_side_value,points_per_process;
+    int N,K,N_blocks_per_row;
+    int cube_side_value,points_per_process,block_size;
     int *neighs_matrix;
     double *neigh_distances_matrix;
     double *distances;
@@ -118,6 +118,8 @@ int main(int argc, char *argv[]){
     // ----------------------SETTING UP----------------------
 
     cube_side_value = 100;
+    block_size = 256;
+    N_blocks_per_row = N/block_size;
 
     points = (t_point *) malloc(sizeof(t_point) * N);
 
@@ -125,35 +127,52 @@ int main(int argc, char *argv[]){
     generate_points(points, N, cube_side_value);
     neighs_matrix = (int *)malloc(sizeof(int)*K*N);
     neigh_distances_matrix = (double *)malloc(sizeof(double)*K*N);
-    distances = (double *)malloc(sizeof(double)*N*N);
+    distances = (double *)malloc(sizeof(double)*block_size*block_size);
     fill_default_values(neigh_distances_matrix,neighs_matrix,K,N,cube_side_value);
 
 
     // ----------------------COMPUTATION----------------------
 
+    // printf("--------------NUMBERS--------------");
+    // for (int i = 0; i < N; i++){
+    //     printf("\n");
+    //     printf("X%d:\t%lf\t%lf\t%lf ",i ,points[i].x, points[i].y, points[i].z);
+    // }
+    // printf("\n");
+
+
     start = actual_time();  
 
-    int i,j;
-    for (i = 0; i < N; i++){
-        for (j = 0; j < N; j++){
-            double dist;
-            if(i >= j) dist = 0.0;
-            else dist = euclideanDistance(&points[i],&points[j]);
+    int b_column,b_row,i,j;
+    for(b_column = 0; b_column<N_blocks_per_row; b_column++){
+        for(b_row = 0; b_row<N_blocks_per_row; b_row++){
+        
+            for (i = b_column*block_size; i < (b_column+1)*block_size; i++){
+                for (j =  b_row*block_size; j <(b_row+1)*block_size; j++){
+                    double dist;
+                    dist = euclideanDistance(&points[i],&points[j]);
+                    //printf("I: %d \t J: %d \t Dist: %lf \n",i,j,dist);
+                    //printf("Position -> %d\n",((i%block_size)*block_size)+(j%block_size));
 
-            distances[i*N+j] = dist;
-        }
-    }
+                    distances[((i%block_size)*block_size)+(j%block_size)] = dist;
+                }
+            }
 
-    for (i = 0; i < N; i++){
-        for (j = 0; j < N; j++){
-            if(i >= j) continue;
+            // printf("--------------DISTANCES Block (%d,%d)--------------",b_column,b_row);
+            // for (int i = 0; i < block_size*block_size; i++){
+            //     if(i%block_size == 0) printf("\nX%d: \t",(b_column*block_size)+(i/block_size));
+            //     printf("%lf \t ", distances[i]);
+            // }
+            // printf("\n");
 
-            double dist = distances[i*N+j];
-
-            //devo fare per i due X punti che sono legati da questo valore
-            //esempio questo punto è (Xi,Xj) = 20 -> faccio per Xi e Xj
-            set_values_for_coordinate(i,j,K,neigh_distances_matrix,neighs_matrix,dist);
-            set_values_for_coordinate(j,i,K,neigh_distances_matrix,neighs_matrix,dist);
+            
+            for (i = 0; i < block_size; i++){
+                for (j = 0; j < block_size; j++){
+                    if(i == j && b_row == b_column) continue;
+                    double dist = distances[((i%block_size)*block_size)+(j%block_size)];
+                    set_values_for_coordinate(b_column*block_size+i,b_row*block_size+j,K,neigh_distances_matrix,neighs_matrix,dist);
+                }
+            }
 
         }
     }
@@ -164,7 +183,21 @@ int main(int argc, char *argv[]){
 
     // ----------------------PRINT----------------------
 
-    
+    // printf("\n");
+    // printf("--------------DISTANCES NEIGH--------------");
+    // for (int i = 0; i < N*K; i++){
+    //     if(i%K == 0) printf("\nX%d: \t",i/K);
+    //     printf("%lf \t ", neigh_distances_matrix[i]);
+    // }
+
+    // printf("\n");
+    // printf("--------------NEIGH--------------");
+    // for (int i = 0; i < N*K; i++){
+    //     if(i%K == 0) printf("\nX%d: \t",i/K);
+    //     printf("%d \t ", neighs_matrix[i]);
+    // }
+    // printf("\n");
+
     printf("N=%d , K=%d -> Time elapsed: %lf seconds\n",N,K,finish);
     FILE *results_file = fopen("results.txt","a+");
     fprintf(results_file, "(N=%d) (K=%d)\t	Max Time=%lf\n", N, K, finish);

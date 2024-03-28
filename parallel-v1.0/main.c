@@ -94,10 +94,9 @@ int main(int argc, char *argv[]){
 
     int my_rank,num_procs,N,K;
     int cube_side_value,points_per_process;
-    int *neighs_matrix;
-    double *neigh_distances_matrix;
+    int *neighs_matrix,*neighs_matrix_buffer;
+    double *neigh_distances_matrix,*neigh_distances_matrix_buffer;
     double *distances;
-    double *distances_buffer;
     t_point *points;
     double start, finish;
 
@@ -131,12 +130,15 @@ int main(int argc, char *argv[]){
     if(my_rank == 0) {
         srand(time(0));
         generate_points(points, N, cube_side_value);
-        neighs_matrix = (int *)malloc(sizeof(int)*K*N);
-        neigh_distances_matrix = (double *)malloc(sizeof(double)*K*N);
-        distances_buffer = (double *)malloc(sizeof(double)*N*N);
-        fill_default_values(neigh_distances_matrix,neighs_matrix,K,N,cube_side_value);
+        neighs_matrix_buffer = (int *)malloc(sizeof(int)*K*N);
+        neigh_distances_matrix_buffer = (double *)malloc(sizeof(double)*K*N);
+        fill_default_values(neigh_distances_matrix_buffer,neighs_matrix_buffer,K,N,cube_side_value);
+        
     }
-    distances = (double *)malloc(sizeof(double)*N*points_per_process);
+    distances = (double *)malloc(sizeof(double)*points_per_process*points_per_process);
+    neighs_matrix = (int *)malloc(sizeof(int)*K*points_per_process);
+    neigh_distances_matrix = (double *)malloc(sizeof(double)*K*points_per_process);
+    fill_default_values(neigh_distances_matrix,neighs_matrix,K,points_per_process,cube_side_value);
 
     MPI_Barrier(MPI_COMM_WORLD);
 
@@ -145,40 +147,43 @@ int main(int argc, char *argv[]){
     // ----------------------COMPUTATION----------------------
 
     MPI_Bcast(points,N,point_type,0,MPI_COMM_WORLD);
+
+    int b_row,i,j;
+    for(b_row = 0; b_row<num_procs; b_row++){
     
-    int i,j;
-    for (i = points_per_process*my_rank; i < points_per_process*(my_rank+1); i++){
-        for (j = 0; j < N; j++){
-            double dist;
-            if(i >= j) dist = 0.0;
-            else dist = euclideanDistance(&points[i],&points[j]);
+        for (i = my_rank*points_per_process; i < (my_rank+1)*points_per_process; i++){
+            for (j =  b_row*points_per_process; j <(b_row+1)*points_per_process; j++){
+                double dist;
+                dist = euclideanDistance(&points[i],&points[j]);
+                //printf("I: %d \t J: %d \t Dist: %lf \n",i,j,dist);
+                //printf("Position -> %d\n",((i%points_per_process)*points_per_process)+(j%points_per_process));
 
-            distances[(i % points_per_process)*N+j] = dist;
+                distances[((i%points_per_process)*points_per_process)+(j%points_per_process)] = dist;
+            }
         }
-    }
 
-    MPI_Gather(distances,N*points_per_process,MPI_DOUBLE,distances_buffer,N*points_per_process,MPI_DOUBLE,0,MPI_COMM_WORLD);
+        // printf("--------------DISTANCES Block (%d,%d)--------------",my_rank,b_row);
+        // for (int i = 0; i < points_per_process*points_per_process; i++){
+        //     if(i%points_per_process == 0) printf("\nX%d: \t",(my_rank*points_per_process)+(i/points_per_process));
+        //     printf("%lf \t ", distances[i]);
+        // }
+        // printf("\n");
 
-    //RIEMPIMENTO MATRICI DEI VICINI
-    int i,j;
-    if(my_rank == 0){
-        for (i = 0; i < N; i++){
-            for (j = 0; j < N; j++){
-                if(i >= j) continue;
-
-                double dist = distances_buffer[i*N+j];
-
-                //devo fare per i due X punti che sono legati da questo valore
-                //esempio questo punto è (Xi,Xj) = 20 -> faccio per Xi e Xj
-
-                set_values_for_coordinate(i,j,K,neigh_distances_matrix,neighs_matrix,dist);
-                set_values_for_coordinate(j,i,K,neigh_distances_matrix,neighs_matrix,dist);
-
+        
+        for (i = 0; i < points_per_process; i++){
+            for (j = 0; j < points_per_process; j++){
+                if(i == j && b_row == my_rank) continue;
+                double dist = distances[(i*points_per_process)+j];
+                set_values_for_coordinate(i,points_per_process*b_row+j,K,neigh_distances_matrix,neighs_matrix,dist);
             }
         }
 
     }
+   
+    
 
+    MPI_Gather(neigh_distances_matrix,K*points_per_process,MPI_DOUBLE,neigh_distances_matrix_buffer,K*points_per_process,MPI_DOUBLE,0,MPI_COMM_WORLD);
+    MPI_Gather(neighs_matrix,K*points_per_process,MPI_INT,neighs_matrix_buffer,K*points_per_process,MPI_INT,0,MPI_COMM_WORLD);
 
     finish = MPI_Wtime()-start;
     double max_time;
@@ -187,12 +192,13 @@ int main(int argc, char *argv[]){
 
     // ----------------------PRINT----------------------
 
-    if(my_rank ==0){
+    if(my_rank == 0){
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
 
         FILE *results_file = fopen("results.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
         fclose(results_file);
+        
         // printf("--------------DISTANCES--------------");
         // for (int i = 0; i < N*N; i++){
         //     if(i%N == 0) printf("\nX%d: \t",i/N);
@@ -203,14 +209,14 @@ int main(int argc, char *argv[]){
         // printf("--------------DISTANCES NEIGH--------------");
         // for (int i = 0; i < N*K; i++){
         //     if(i%K == 0) printf("\nX%d: \t",i/K);
-        //     printf("%lf \t ", neigh_distances_matrix[i]);
+        //     printf("%lf \t ", neigh_distances_matrix_buffer[i]);
         // }
 
         // printf("\n");
         // printf("--------------NEIGH--------------");
         // for (int i = 0; i < N*K; i++){
         //     if(i%K == 0) printf("\nX%d: \t",i/K);
-        //     printf("%d \t ", neighs_matrix[i]);
+        //     printf("%d \t ", neighs_matrix_buffer[i]);
         // }
 
     }
@@ -224,13 +230,14 @@ int main(int argc, char *argv[]){
     // ----------------------FREE MEMORY----------------------
 
     if(my_rank ==0){
-        free(neigh_distances_matrix);
-        free(neighs_matrix);
-        free(distances_buffer);
+        free(neigh_distances_matrix_buffer);
+        free(neighs_matrix_buffer);
     }
     MPI_Type_free(&point_type);
     free(distances);
     free(points);
+    free(neigh_distances_matrix);
+    free(neighs_matrix);
 
     MPI_Finalize();
 
