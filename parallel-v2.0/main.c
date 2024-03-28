@@ -65,6 +65,18 @@ void set_values_to_neigh(double *neigh_distances, int *neigh_idxes,int num_neigh
     neigh_idxes[get_matrix_position(point_idx, from_pos, num_neigh)] = neigh_idx;
 }
 
+void load_points_from_file(char *file_name, t_point *points,int num_points)
+{
+    FILE *points_file = fopen(file_name, "r");
+    if (points_file == NULL)
+    {
+        perror("Error while opening input file.\n");
+        exit(-1);
+    }
+    for (int i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
+    fclose(points_file);
+}
+
 int main(int argc, char *argv[]){
 
     MPI_Init(&argc, &argv);
@@ -88,7 +100,7 @@ int main(int argc, char *argv[]){
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-    if(argc != 3) {
+    if(argc < 3 || argc > 4) {
         print_error_argc(argc);
         return -1;
     }
@@ -106,7 +118,7 @@ int main(int argc, char *argv[]){
 
     if(my_rank == 0) {
         srand(time(0));
-        generate_points(points, N, cube_side_value);
+        (argc == 4) ? load_points_from_file(argv[3], points, N) : generate_points(points, N, cube_side_value);
         r_buffer_neighs = (int *)malloc(sizeof(int)*K*N);
         r_buffer_distances = (double *)malloc(sizeof(double)*K*N);
     }

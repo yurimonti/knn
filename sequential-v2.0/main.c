@@ -109,8 +109,20 @@ void set_values_to_neigh(double *neigh_distances, int *neigh_idxes,int num_neigh
     neigh_idxes[get_matrix_position(point_idx, from_pos, num_neigh)] = neigh_idx;
 }
 
+void load_points_from_file(char *file_name, t_point *points,int num_points)
+{
+    FILE *points_file = fopen(file_name, "r");
+    if (points_file == NULL)
+    {
+        perror("Error while opening input file.\n");
+        exit(-1);
+    }
+    for (int i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
+    fclose(points_file);
+}
+
 int main(int argc, char **argv){
-    if(argc != 3) {
+    if(argc < 3 || argc > 4) {
         print_error_argc(argc);
         return -1;
     }
@@ -122,11 +134,11 @@ int main(int argc, char **argv){
     }
     //SETTING UP
     t_point *points = (t_point *) malloc(sizeof(t_point) * N);
-
+    int cube_side_value = 100;
     int *neighs_matrix = (int *)malloc(sizeof(int)*K*N);
     double *neigh_distances_matrix = (double *)malloc(sizeof(double)*K*N);
     srand(time(0));
-    generate_points(points, N, 100);
+    (argc == 4) ? load_points_from_file(argv[3], points, N) : generate_points(points, N, cube_side_value);
     fill_default_values(neigh_distances_matrix,neighs_matrix,K,N);
 
     //TIME

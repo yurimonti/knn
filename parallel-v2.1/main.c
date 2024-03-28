@@ -73,6 +73,18 @@ void insert_value(double *neigh_dists, int *neigh_idxs, int neighs_number, doubl
     neigh_idxs[position] = neigh_to_insert;
 }
 
+void load_points_from_file(char *file_name, t_point *points,int num_points)
+{
+    FILE *points_file = fopen(file_name, "r");
+    if (points_file == NULL)
+    {
+        perror("Error while opening input file.\n");
+        exit(-1);
+    }
+    for (int i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
+    fclose(points_file);
+}
+
 int main(int argc, char *argv[]){
 
     MPI_Init(&argc, &argv);
@@ -96,7 +108,7 @@ int main(int argc, char *argv[]){
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-    if(argc != 3) {
+    if(argc < 3 || argc > 4) {
         print_error_argc(argc);
         return -1;
     }
@@ -106,7 +118,6 @@ int main(int argc, char *argv[]){
         print_error_neighbours(N,K);
         return -1;
     }
-
     points_per_process = N / num_procs;
     //SETTING UP
     points = (t_point *) malloc(sizeof(t_point) * N);
@@ -114,7 +125,7 @@ int main(int argc, char *argv[]){
 
     if(my_rank == 0) {
         srand(time(0));
-        generate_points(points, N, cube_side_value);
+        (argc == 4) ? load_points_from_file(argv[3], points, N) : generate_points(points, N, cube_side_value);
         r_buffer_neighs = (int *)malloc(sizeof(int)*K*N);
         r_buffer_distances = (double *)malloc(sizeof(double)*K*N);
     }
@@ -172,9 +183,9 @@ int main(int argc, char *argv[]){
         fclose(fp_neighs);
         fclose(fp_distances); */
 
-        FILE *results_file = fopen("results.txt","a+");
-        fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
-        fclose(results_file);
+        // FILE *results_file = fopen("results.txt","a+");
+        // fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
+        // fclose(results_file);
     }
     //Freeing memory
     if(my_rank ==0){
