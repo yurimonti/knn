@@ -73,7 +73,8 @@ void load_points_from_file(char *file_name, t_point *points,int num_points)
         perror("Error while opening input file.\n");
         exit(-1);
     }
-    for (int i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
+    int i;
+    for (i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
     fclose(points_file);
 }
 
@@ -164,7 +165,7 @@ int main(int argc, char *argv[]){
     if(my_rank ==0){
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
 
-        FILE *results_file = fopen("results.txt","a+");
+        FILE *results_file = fopen("resultsParallel2-0.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
         fclose(results_file);
     }

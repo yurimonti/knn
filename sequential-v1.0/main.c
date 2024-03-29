@@ -91,7 +91,8 @@ void load_points_from_file(char *file_name, t_point *points,int num_points)
         perror("Error while opening input file.\n");
         exit(-1);
     }
-    for (int i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
+    int i;
+    for (i = 0; i < num_points; i++) fscanf(points_file, "[%lf,%lf,%lf]\n", &points[i].x, &points[i].y, &points[i].z);
     fclose(points_file);
 }
 
@@ -208,7 +209,7 @@ int main(int argc, char *argv[]){
     // printf("\n");
 
     printf("N=%d , K=%d -> Time elapsed: %lf seconds\n",N,K,finish);
-    FILE *results_file = fopen("results.txt","a+");
+    FILE *results_file = fopen("resultsSequential1-0.txt","a+");
     fprintf(results_file, "(N=%d) (K=%d)\t	Max Time=%lf\n", N, K, finish);
     fclose(results_file);
 
