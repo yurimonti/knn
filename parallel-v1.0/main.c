@@ -139,7 +139,7 @@ int main(int argc, char *argv[]){
 
     if(my_rank == 0) {
         srand(time(0));
-        (argc == 4) ? load_points_from_file(argv[3], points, N) : generate_points(points, N, cube_side_value);
+        (argc == 4 || argc == 5) ? load_points_from_file(argv[3], points, N) : generate_points(points, N, cube_side_value);
         neighs_matrix_buffer = (int *)malloc(sizeof(int)*K*N);
         neigh_distances_matrix_buffer = (double *)malloc(sizeof(double)*K*N);
         fill_default_values(neigh_distances_matrix_buffer,neighs_matrix_buffer,K,N,cube_side_value);
@@ -208,6 +208,22 @@ int main(int argc, char *argv[]){
         FILE *results_file = fopen("resultsParallel1-0.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
         fclose(results_file);
+
+        // FILE *fp_neighs, *fp_distances;
+        // fp_neighs = fopen("neighbours.csv", "w");
+        // fp_distances = fopen("min-distances.csv", "w");
+        // for (int i=0; i<N; i++) {
+        //     for(int j=0; j<K; j++) {
+        //         int array_idx = i*K + j;
+        //         int neigh_idx = neighs_matrix_buffer[array_idx];
+        //         fprintf(fp_neighs,"[%lf,%lf,%lf]\t", points[neigh_idx].x,points[neigh_idx].y,points[neigh_idx].z);
+        //         fprintf(fp_distances,"%lf\t", neigh_distances_matrix_buffer[array_idx]);
+        //     }
+        //     fprintf(fp_neighs,"\n");
+        //     fprintf(fp_distances,"\n");
+        // }
+        // fclose(fp_neighs);
+        // fclose(fp_distances);
         
         // printf("--------------DISTANCES--------------");
         // for (int i = 0; i < N*N; i++){

@@ -107,6 +107,7 @@ int main(int argc, char *argv[]){
     }
     N = atoi(argv[1]);
     K = atoi(argv[2]);
+
     if(K>=N){
         print_error_neighbours(N,K);
         return -1;
@@ -164,6 +165,22 @@ int main(int argc, char *argv[]){
 
     if(my_rank ==0){
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
+
+        // FILE *fp_neighs, *fp_distances;
+        // fp_neighs = fopen("neighbours.csv", "w");
+        // fp_distances = fopen("min-distances.csv", "w");
+        // for (int i=0; i<N; i++) {
+        //     for(int j=0; j<K; j++) {
+        //         int array_idx = i*K + j;
+        //         int neigh_idx = r_buffer_neighs[array_idx];
+        //         fprintf(fp_neighs,"[%lf,%lf,%lf]\t", points[neigh_idx].x,points[neigh_idx].y,points[neigh_idx].z);
+        //         fprintf(fp_distances,"%lf\t", r_buffer_distances[array_idx]);
+        //     }
+        //     fprintf(fp_neighs,"\n");
+        //     fprintf(fp_distances,"\n");
+        // }
+        // fclose(fp_neighs);
+        // fclose(fp_distances);
 
         FILE *results_file = fopen("resultsParallel2-0.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);

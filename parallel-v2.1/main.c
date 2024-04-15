@@ -48,11 +48,7 @@ void fill_default_values(double *neigh_distance, int *neigh_idxes,int num_neigh,
 int find_position(double *array, int left, int right, double to_insert){
     while (left <= right){
         int mid = (left + right) / 2;
-
-        if (array[mid] == to_insert){
-            return mid;
-        }
-        else if (array[mid] < to_insert){
+        if (array[mid] <= to_insert){
             left = mid + 1;
         }
         else{
@@ -64,13 +60,16 @@ int find_position(double *array, int left, int right, double to_insert){
 
 void insert_value(double *neigh_dists, int *neigh_idxs, int neighs_number, double distance_to_insert,int neigh_to_insert,int idx_point){
     int position = find_position(neigh_dists, idx_point*neighs_number , (idx_point+1)*neighs_number - 1, distance_to_insert);
-    int i;
-    for (i = (idx_point+1)*neighs_number - 1; i > position; i--){
-        neigh_dists[i] = neigh_dists[i - 1];
-        neigh_idxs[i] = neigh_idxs[i - 1];
+    if(position <= (idx_point+1)*neighs_number - 1){
+        int i;
+        for (i = (idx_point + 1) * neighs_number - 1; i > position; i--)
+        {
+            neigh_dists[i] = neigh_dists[i - 1];
+            neigh_idxs[i] = neigh_idxs[i - 1];
+        }
+        neigh_dists[position] = distance_to_insert;
+        neigh_idxs[position] = neigh_to_insert;
     }
-    neigh_dists[position] = distance_to_insert;
-    neigh_idxs[position] = neigh_to_insert;
 }
 
 void load_points_from_file(char *file_name, t_point *points,int num_points)
@@ -115,6 +114,7 @@ int main(int argc, char *argv[]){
     }
     N = atoi(argv[1]);
     K = atoi(argv[2]);
+
     if(K>=N){
         print_error_neighbours(N,K);
         return -1;
@@ -183,7 +183,7 @@ int main(int argc, char *argv[]){
         fclose(fp_points);
         fclose(fp_neighs);
         fclose(fp_distances); */
-
+        
         FILE *results_file = fopen("resultsParallel2-1.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
         fclose(results_file);

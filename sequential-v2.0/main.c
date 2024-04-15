@@ -129,6 +129,7 @@ int main(int argc, char **argv){
     }
     int N = atoi(argv[1]);
     int K = atoi(argv[2]);
+
     if(K>=N){
         print_error_neighbours(N,K);
         return -1;
@@ -163,6 +164,7 @@ int main(int argc, char **argv){
     }
     double finish = actual_time() - tick;
     printf("N=%d , K=%d -> Time elapsed: %lf seconds\n",N,K,finish);
+
     FILE *results_file = fopen("resultsSequential2-0.txt","a+");
     fprintf(results_file, "(N=%d) (K=%d)\t	Max Time=%lf\n", N, K, finish);
     fclose(results_file);
