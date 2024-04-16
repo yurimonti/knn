@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
         MPI_Scatter(NULL, points_per_process, point_type, received_points, points_per_process, point_type, 0, MPI_COMM_WORLD);
     }
 
-    calculate_and_insert_distance(neigh_distances_matrix,neighs_matrix,points_per_process,K,my_points,received_points,true);
+    calculate_and_insert_distance(neigh_distances_matrix,neighs_matrix,my_rank,points_per_process,K,my_points,received_points,true);
     // // MPI_Send(received_points, points_per_process, point_type, dest, RECEIVED_TAG, MPI_COMM_WORLD);
     // // MPI_Recv(received_points, points_per_process, point_type, source, RECEIVED_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     int p = 1;
