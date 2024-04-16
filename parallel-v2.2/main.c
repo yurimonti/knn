@@ -92,9 +92,10 @@ void insert_value(double *neigh_dists, int *neigh_idxs, int neighs_number, doubl
 }
 
 void calculate_and_insert_distance(double *where_insert_distance,int *where_insert_neigh,int get_from,int number_of_points,int number_of_neigh,t_point *my_points,t_point *received_points,bool skip_diagonal){
-    for (int i = 0; i < number_of_points; i++)
+    int i,j;
+    for (i = 0; i < number_of_points; i++)
     {
-        for (int j = 0; j < number_of_points; j++)
+        for (j = 0; j < number_of_points; j++)
         {
             if(i==j && skip_diagonal== true) continue;
             double dist = euclideanDistance(&my_points[i], &received_points[j]);
@@ -211,8 +212,8 @@ int main(int argc, char *argv[])
         MPI_Scatter(NULL, points_per_process, point_type, received_points, points_per_process, point_type, COORDINATOR, MPI_COMM_WORLD);
     }
 
-    // fai conti per te stesso
-    for (int i = 0; i < num_procs; i++)
+    int i;
+    for (i = 0; i < num_procs; i++)
     {
 
         if (i != 0)

@@ -206,8 +206,8 @@ int main(int argc, char *argv[])
             int buffer_attached_size = MPI_BSEND_OVERHEAD + sizeof(t_point)*points_per_process;
             char *buffer_attached = (char *)malloc(buffer_attached_size);
             MPI_Buffer_attach(buffer_attached, buffer_attached_size);
-            MPI_Bsend(received_points, points_per_process, point_type, (my_rank + i) % num_procs, RECEIVED_TAG, MPI_COMM_WORLD);
-            MPI_Recv(received_points, points_per_process, point_type, (my_rank - i + num_procs) % (num_procs), RECEIVED_TAG, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+            MPI_Bsend(received_points, points_per_process, point_type, dest, RECEIVED_TAG, MPI_COMM_WORLD);
+            MPI_Recv(received_points, points_per_process, point_type, source, RECEIVED_TAG, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
             MPI_Buffer_detach(&buffer_attached, &buffer_attached_size);
             free(buffer_attached);
         }

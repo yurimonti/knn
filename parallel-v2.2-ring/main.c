@@ -77,7 +77,7 @@ int find_position(double *array, int left, int right, double to_insert)
 void insert_value(double *neigh_dists, int *neigh_idxs, int neighs_number, double distance_to_insert, int neigh_to_insert, int idx_point)
 {
     int position = find_position(neigh_dists, idx_point * neighs_number, (idx_point + 1) * neighs_number - 1, distance_to_insert);
-    printf("poition %d for distance\n",position);
+    //printf("poition %d for distance\n",position);
     if(position <= (idx_point + 1) * neighs_number - 1){
         int i;
         for (i = (idx_point + 1) * neighs_number - 1; i > position; i--)
@@ -105,9 +105,10 @@ void load_points_from_file(char *file_name, t_point *points, int num_points)
 }
 
 void calculate_and_insert_distance(double *where_insert_distance,int *where_insert_neigh,int get_from,int number_of_points,int number_of_neigh,t_point *my_points,t_point *received_points,bool skip_diagonal){
-    for (int i = 0; i < number_of_points; i++)
+    int i,j;
+    for (i = 0; i < number_of_points; i++)
     {
-        for (int j = 0; j < number_of_points; j++)
+        for (j = 0; j < number_of_points; j++)
         {
             if(i==j && skip_diagonal== true) continue;
             double dist = euclideanDistance(&my_points[i], &received_points[j]);
