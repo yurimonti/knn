@@ -256,25 +256,25 @@ int main(int argc, char *argv[])
     {
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n", num_procs, N, K, max_time);
 
-        FILE *fp_neighs, *fp_distances;
-        fp_neighs = fopen("neighbours.csv", "w");
-        fp_distances = fopen("min-distances.csv", "w");
-        for (int i = 0; i < N; i++)
-        {
-            for (int j = 0; j < K; j++)
-            {
-                int array_idx = i*K + j;
-                int neigh_idx = neighs_matrix_buffer[array_idx];
-                fprintf(fp_neighs,"%d\t", neigh_idx);
-                fprintf(fp_distances,"%lf\t", neigh_distances_matrix_buffer[array_idx]);
-            }
-            fprintf(fp_neighs, "\n");
-            fprintf(fp_distances, "\n");
-        }
-        fclose(fp_neighs);
-        fclose(fp_distances);
+        // FILE *fp_neighs, *fp_distances;
+        // fp_neighs = fopen("neighbours.csv", "w");
+        // fp_distances = fopen("min-distances.csv", "w");
+        // for (int i = 0; i < N; i++)
+        // {
+        //     for (int j = 0; j < K; j++)
+        //     {
+        //         int array_idx = i*K + j;
+        //         int neigh_idx = neighs_matrix_buffer[array_idx];
+        //         fprintf(fp_neighs,"%d\t", neigh_idx);
+        //         fprintf(fp_distances,"%lf\t", neigh_distances_matrix_buffer[array_idx]);
+        //     }
+        //     fprintf(fp_neighs, "\n");
+        //     fprintf(fp_distances, "\n");
+        // }
+        // fclose(fp_neighs);
+        // fclose(fp_distances);
 
-        FILE *results_file = fopen("resultsParallel3-0.txt", "a+");
+        FILE *results_file = fopen("resultsParallel2-2.txt", "a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n", num_procs, N, K, max_time);
         fclose(results_file);
     }

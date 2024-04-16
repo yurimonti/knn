@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
     if (my_rank == 0)
     {
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n", num_procs, N, K, max_time);
-        FILE *results_file = fopen("resultsParallel3-0.txt","a+");
+        FILE *results_file = fopen("resultsParallel1-1.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
         fclose(results_file);
     }

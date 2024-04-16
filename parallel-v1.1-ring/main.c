@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
         // fclose(fp_neighs);
         // fclose(fp_distances);
 
-        FILE *results_file = fopen("resultsParallel3-0-ring.txt","a+");
+        FILE *results_file = fopen("resultsParallel1-1-ring.txt","a+");
         fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
         fclose(results_file);
     }

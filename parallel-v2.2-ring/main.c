@@ -254,25 +254,25 @@ int main(int argc, char *argv[])
 
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n", num_procs, N, K, max_time);
         // WRITING POINTS , DISTANCES AND NEIGHBOURS INDEX IN DIFFERENT FILES BY COORDINATOR
-        FILE *fp_neighs, *fp_distances;
-        fp_neighs = fopen("neighbours.csv", "w");
-        fp_distances = fopen("min-distances.csv", "w");
-        for (int i=0; i<N; i++) {
-            for(int j=0; j<K; j++) {
-                int array_idx = i*K + j;
-                int neigh_idx = r_buffer_neighs[array_idx];
-                fprintf(fp_neighs,"%d\t", r_buffer_neighs[array_idx]);
-                fprintf(fp_distances,"%lf\t", r_buffer_distances[array_idx]);
-            }
-            fprintf(fp_neighs,"\n");
-            fprintf(fp_distances,"\n");
-        }
-        fclose(fp_neighs);
-        fclose(fp_distances);
+        // FILE *fp_neighs, *fp_distances;
+        // fp_neighs = fopen("neighbours.csv", "w");
+        // fp_distances = fopen("min-distances.csv", "w");
+        // for (int i=0; i<N; i++) {
+        //     for(int j=0; j<K; j++) {
+        //         int array_idx = i*K + j;
+        //         int neigh_idx = r_buffer_neighs[array_idx];
+        //         fprintf(fp_neighs,"%d\t", r_buffer_neighs[array_idx]);
+        //         fprintf(fp_distances,"%lf\t", r_buffer_distances[array_idx]);
+        //     }
+        //     fprintf(fp_neighs,"\n");
+        //     fprintf(fp_distances,"\n");
+        // }
+        // fclose(fp_neighs);
+        // fclose(fp_distances);
 
-        //     FILE *results_file = fopen("resultsParallel2-1.txt","a+");
-        //     fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
-        //     fclose(results_file);
+        FILE *results_file = fopen("resultsParallel2-2-ring.txt","a+");
+        fprintf(results_file, "(P=%d) (N=%d) (K=%d)\t	Max Time=%lf\n",num_procs,N,K,max_time);
+        fclose(results_file);
     }
     // Freeing memory
     if (my_rank == 0)
