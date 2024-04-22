@@ -15,6 +15,7 @@ _deps
 
 # editor
 .vscode
+.vs
 
 # Object files
 *.o
