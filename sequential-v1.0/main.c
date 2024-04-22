@@ -4,7 +4,6 @@
 #include <sys/time.h>
 #include <stdbool.h>
 
-
 typedef struct point_st {
     double x;
     double y;

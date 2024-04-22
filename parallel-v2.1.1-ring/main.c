@@ -119,16 +119,6 @@ void calculate_and_insert_distance(double *where_insert_distance,int *where_inse
 
 int main(int argc, char *argv[])
 {
-
-    MPI_Init(&argc, &argv);
-
-    MPI_Datatype point_type;
-    int block_length[] = {1, 1, 1};
-    MPI_Aint displacements[] = {0, sizeof(double), 2 * sizeof(double)};
-    MPI_Datatype types[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
-    MPI_Type_create_struct(3, block_length, displacements, types, &point_type);
-    MPI_Type_commit(&point_type);
-
     int my_rank, num_procs, N, K;
     int cube_side_value, points_per_process;
     int *neighs_matrix;
@@ -138,10 +128,7 @@ int main(int argc, char *argv[])
     t_point *points, *my_points, *received_points;
     int source, dest;
     double start, finish;
-
-    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
-
+    
     if (argc < 3 || argc > 4)
     {
         print_error_argc(argc);
@@ -154,9 +141,24 @@ int main(int argc, char *argv[])
         print_error_neighbours(N, K);
         return -1;
     }
-    points_per_process = N / num_procs;
-    // SETTING UP
 
+    //INITIALIZATION
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
+    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    
+    
+    //COMMITMENT OF THE MPI_STRUCT FOR POINTS
+    MPI_Datatype point_type;
+    int block_length[] = {1, 1, 1};
+    MPI_Aint displacements[] = {0, sizeof(double), 2 * sizeof(double)};
+    MPI_Datatype types[3] = {MPI_DOUBLE, MPI_DOUBLE, MPI_DOUBLE};
+    MPI_Type_create_struct(3, block_length, displacements, types, &point_type);
+    MPI_Type_commit(&point_type);
+    
+    // SETTING UP
+    points_per_process = N / num_procs;
     cube_side_value = 100;
 
     if (my_rank == COORDINATOR)
@@ -176,10 +178,13 @@ int main(int argc, char *argv[])
     dest = (my_rank + 1) % (num_procs);               /* next in a ring */
     source = (my_rank - 1 + num_procs) % (num_procs); /* precedent in a ring */
 
+    //SYNCHRONIZATION
     MPI_Barrier(MPI_COMM_WORLD);
-    // TIME
+
+    // TIME START
     start = MPI_Wtime();
 
+    //SCATTERING POINTS
     if (my_rank == COORDINATOR)
     {
         MPI_Scatter(points, points_per_process, point_type, my_points, points_per_process, point_type, 0, MPI_COMM_WORLD);
@@ -191,9 +196,10 @@ int main(int argc, char *argv[])
         MPI_Scatter(NULL, points_per_process, point_type, received_points, points_per_process, point_type, 0, MPI_COMM_WORLD);
     }
 
+    //COMPUTATION
+
     calculate_and_insert_distance(neigh_distances_matrix,neighs_matrix,my_rank,points_per_process,K,my_points,received_points,true);
-    // // MPI_Send(received_points, points_per_process, point_type, dest, RECEIVED_TAG, MPI_COMM_WORLD);
-    // // MPI_Recv(received_points, points_per_process, point_type, source, RECEIVED_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
     int p = 1;
     while(p < num_procs)
     {
@@ -212,7 +218,7 @@ int main(int argc, char *argv[])
         p++;
     }
     
-   
+   //COMPLETATION -- COLLECTING RESULTS
 
     MPI_Gather(neigh_distances_matrix, K * points_per_process, MPI_DOUBLE, r_buffer_distances, K * points_per_process, MPI_DOUBLE, COORDINATOR, MPI_COMM_WORLD);
     MPI_Gather(neighs_matrix, K * points_per_process, MPI_INT, r_buffer_neighs, K * points_per_process, MPI_INT, COORDINATOR, MPI_COMM_WORLD);
@@ -233,9 +239,10 @@ int main(int argc, char *argv[])
     // MPI_Gather(neigh_distances_matrix,K*points_per_process,MPI_DOUBLE,r_buffer_distances,K*points_per_process,MPI_DOUBLE,0,MPI_COMM_WORLD);
     // MPI_Gather(neighs_matrix,K*points_per_process,MPI_INT,r_buffer_neighs,K*points_per_process,MPI_INT,0,MPI_COMM_WORLD);
 
+    //Total time
     finish = MPI_Wtime() - start;
     double max_time;
-
+    //reduce max time for each process and set value in a variable max_time
     MPI_Reduce(&finish, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
 

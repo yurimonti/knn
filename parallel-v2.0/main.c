@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <mpi.h>
 
-
 typedef struct point_st {
     double x;
     double y;
@@ -79,9 +78,9 @@ void load_points_from_file(char *file_name, t_point *points,int num_points)
 }
 
 int main(int argc, char *argv[]){
-
+    //INITIALIZATION
     MPI_Init(&argc, &argv);
-
+    //STRUCT AND VARIABLE DECLARATION AND DEFINITION
     MPI_Datatype point_type;
     int block_length[] = {1,1,1};
     MPI_Aint displacements[] = {0, sizeof(double), 2*sizeof(double)};
@@ -127,7 +126,8 @@ int main(int argc, char *argv[]){
     neighs_matrix = (int *)malloc(sizeof(int)*K*points_per_process);
     neigh_distances_matrix = (double *)malloc(sizeof(double)*K*points_per_process);
     fill_default_values(neigh_distances_matrix,neighs_matrix,K,points_per_process,cube_side_value);
-
+    
+    //SYNC
     MPI_Barrier(MPI_COMM_WORLD);
     // TIME
     start = MPI_Wtime();
@@ -153,16 +153,17 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    
+
+    //COLLECTION RESULTS -- COMPLETATION
     MPI_Gather(neigh_distances_matrix,K*points_per_process,MPI_DOUBLE,r_buffer_distances,K*points_per_process,MPI_DOUBLE,0,MPI_COMM_WORLD);
     MPI_Gather(neighs_matrix,K*points_per_process,MPI_INT,r_buffer_neighs,K*points_per_process,MPI_INT,0,MPI_COMM_WORLD);
 
-
+    //GETTING TOTAL TIME
     finish = MPI_Wtime()-start;
     double max_time;
 
     MPI_Reduce(&finish,&max_time,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
-
+    
     if(my_rank ==0){
         printf("P = %d , N=%d , K=%d -> Time elapsed: %lf seconds\n",num_procs,N,K,max_time);
 

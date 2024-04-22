@@ -177,30 +177,15 @@ int main(int argc, char *argv[])
     neigh_distances_matrix = (double *)malloc(sizeof(double) * K * points_per_process);
     fill_default_values(neigh_distances_matrix, neighs_matrix, K, points_per_process, cube_side_value);
 
+    //SYNCHRONIZATION
     MPI_Barrier(MPI_COMM_WORLD);
 
+    // START TIME
     start = MPI_Wtime();
-    /* 
-    f (my_rank == COORDINATOR)
-    {
-        for (int j = 0; j < points_per_process; j++)
-        {
-            my_points[j] = points[j];
-            received_points[j] = points[j];
-        }
-        for (int i = 1; i < num_procs; i++)
-        {
-            MPI_Send(points + (i * points_per_process), points_per_process, point_type, i,MYPOINT_TAG, MPI_COMM_WORLD);
-            MPI_Send(points + (i * points_per_process), points_per_process, point_type, i, RECEIVED_TAG, MPI_COMM_WORLD);
-        }
-    }
-    else
-    {
-        MPI_Recv(my_points, points_per_process, point_type, COORDINATOR, MYPOINT_TAG, MPI_COMM_WORLD, &status);
-        MPI_Recv(received_points, points_per_process, point_type, COORDINATOR, RECEIVED_TAG, MPI_COMM_WORLD, &status);
-    }
-     */
+
     //starting scattering points
+
+    //STARTING
     if (my_rank == COORDINATOR)
     {
         MPI_Scatter(points, points_per_process, point_type, my_points, points_per_process, point_type, COORDINATOR, MPI_COMM_WORLD);
@@ -212,10 +197,11 @@ int main(int argc, char *argv[])
         MPI_Scatter(NULL, points_per_process, point_type, received_points, points_per_process, point_type, COORDINATOR, MPI_COMM_WORLD);
     }
 
+    //COMPUTATION
     int i;
     for (i = 0; i < num_procs; i++)
     {
-
+        // in the first iteration processes don't send points, but start computation with their owns 
         if (i != 0)
         {
             int buffer_attached_size = MPI_BSEND_OVERHEAD + sizeof(t_point)*points_per_process;
@@ -230,27 +216,17 @@ int main(int argc, char *argv[])
         }
 
         calculate_and_insert_distance(neigh_distances_matrix,neighs_matrix,(my_rank - i + num_procs) % (num_procs),points_per_process,K,my_points,received_points,i==0);
-
-        // for (int j = 0; j < points_per_process; j++)
-        // {
-        //     printf("my rank is %d and i get from P%d n = [%lf,%lf,%lf]\n", my_rank, (my_rank - i) % num_procs, received_points[j].x, received_points[j].y, received_points[j].z);
-        // }
-        // printf("--------------DISTANCES Block (%d,%d)--------------", my_rank, (my_rank - i + num_procs) % (num_procs));
-        // for (int i = 0; i < points_per_process * points_per_process; i++)
-        // {
-        //     if (i % points_per_process == 0)
-        //         printf("\nX%d: \t", (my_rank * points_per_process) + (i / points_per_process));
-        //     printf("%lf \t ", distances[i]);
-        // }
-        // printf("\n");
     }
 
+    //COLLECTING RESULTS -- COMPLETATION
     MPI_Gather(neigh_distances_matrix, K * points_per_process, MPI_DOUBLE, neigh_distances_matrix_buffer, K * points_per_process, MPI_DOUBLE, COORDINATOR, MPI_COMM_WORLD);
     MPI_Gather(neighs_matrix, K * points_per_process, MPI_INT, neighs_matrix_buffer, K * points_per_process, MPI_INT, COORDINATOR, MPI_COMM_WORLD);
     
+    //Total time
     finish = MPI_Wtime() - start;
 
     double max_time;
+    //reduce max time for each process and set value in a variable max_time
     MPI_Reduce(&finish, &max_time, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
 
     if (my_rank == 0)
@@ -280,6 +256,7 @@ int main(int argc, char *argv[])
         fclose(results_file);
     }
 
+    // FREEINGì
     if (my_rank == 0)
     {
         free(neigh_distances_matrix_buffer);

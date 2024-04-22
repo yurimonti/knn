@@ -5,7 +5,6 @@
 #include <stdbool.h>
 #include <mpi.h>
 
-
 typedef struct point_st {
     double x;
     double y;
@@ -171,14 +170,6 @@ int main(int argc, char *argv[]){
                 distances[((i%points_per_process)*points_per_process)+(j%points_per_process)] = dist;
             }
         }
-
-        // printf("--------------DISTANCES Block (%d,%d)--------------",my_rank,b_row);
-        // for (int i = 0; i < points_per_process*points_per_process; i++){
-        //     if(i%points_per_process == 0) printf("\nX%d: \t",(my_rank*points_per_process)+(i/points_per_process));
-        //     printf("%lf \t ", distances[i]);
-        // }
-        // printf("\n");
-
         
         for (i = 0; i < points_per_process; i++){
             for (j = 0; j < points_per_process; j++){
@@ -191,10 +182,11 @@ int main(int argc, char *argv[]){
     }
    
     
-
+    //COLLECTING RESULTS -- COMPLETATION
     MPI_Gather(neigh_distances_matrix,K*points_per_process,MPI_DOUBLE,neigh_distances_matrix_buffer,K*points_per_process,MPI_DOUBLE,0,MPI_COMM_WORLD);
     MPI_Gather(neighs_matrix,K*points_per_process,MPI_INT,neighs_matrix_buffer,K*points_per_process,MPI_INT,0,MPI_COMM_WORLD);
 
+    //REDUCING INTO VARIABLE TOTAL TIME SPENT
     finish = MPI_Wtime()-start;
     double max_time;
     MPI_Reduce(&finish,&max_time,1,MPI_DOUBLE,MPI_MAX,0,MPI_COMM_WORLD);
